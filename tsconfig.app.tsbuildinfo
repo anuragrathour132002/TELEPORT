@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/theme.ts","./src/components/flights/FlightsBasicTable.tsx","./src/components/flights/FlightsFilterPanel.tsx","./src/constants/days.ts","./src/hooks/useFlightsData.ts","./src/types/filters.ts","./src/types/flight.ts","./src/types/react-window.d.ts","./src/utils/date.ts","./src/utils/flight.ts"],"version":"5.9.3"}
