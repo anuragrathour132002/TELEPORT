@@ -13,7 +13,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo, useState, type CSSProperties } from "react";
+import { FixedSizeList, type ListChildComponentProps } from "react-window";
 import { DAYS_OF_WEEK } from "../../constants/days";
 import type { Flight } from "../../types/flight";
 import { isValidIsoDate, isValidTime } from "../../utils/date";
@@ -28,6 +29,8 @@ interface FlightsBasicTableProps {
   onUpdateFlight: (id: string, updates: Partial<Flight>) => void;
 }
 
+const ROW_HEIGHT = 84;
+const LIST_HEIGHT = 520;
 const GRID_TEMPLATE =
   "48px 90px 64px 92px 120px 70px 70px 140px 120px 110px 110px 130px 180px";
 const DATE_INPUT_SX = {
@@ -66,7 +69,8 @@ function getDaysLabel(days: number[]): string {
 }
 
 const TableRowItem = memo(
-  ({ flight, data }: { flight: Flight; data: RowData }) => {
+  ({ index, style, data }: ListChildComponentProps<RowData>) => {
+    const flight = data.flights[index];
     const isEditing = data.editingRowId === flight.id;
     const isSaving = data.savingRowId === flight.id;
     const rowSource = isEditing && data.draftRow ? data.draftRow : flight;
@@ -76,6 +80,7 @@ const TableRowItem = memo(
 
     return (
       <Box
+        style={style as CSSProperties}
         sx={{
           display: "grid",
           gridTemplateColumns: GRID_TEMPLATE,
@@ -451,11 +456,16 @@ export function FlightsBasicTable({
           </Typography>
         </Box>
 
-        <Box sx={{ maxHeight: 520, overflowY: "auto" }}>
-          {flights.map((flight) => (
-            <TableRowItem key={flight.id} flight={flight} data={rowData} />
-          ))}
-        </Box>
+        <FixedSizeList
+          height={LIST_HEIGHT}
+          itemCount={flights.length}
+          itemSize={ROW_HEIGHT}
+          width="100%"
+          itemData={rowData}
+          overscanCount={6}
+        >
+          {TableRowItem}
+        </FixedSizeList>
       </Paper>
     </Stack>
   );
