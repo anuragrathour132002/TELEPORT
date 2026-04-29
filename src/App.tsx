@@ -8,6 +8,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { DeleteConfirmDialog } from "./components/common/DeleteConfirmDialog";
 import { FlightsBasicTable } from "./components/flights/FlightsBasicTable";
 import { FlightsFilterPanel } from "./components/flights/FlightsFilterPanel";
 import { useFlightsData } from "./hooks/useFlightsData";
@@ -15,12 +16,18 @@ import { DEFAULT_FLIGHT_FILTERS, type FlightFilters } from "./types/filters";
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 
+type DeleteDialogState =
+  | { mode: "single"; flightId: string }
+  | { mode: "bulk"; ids: string[] }
+  | null;
+
 export default function App() {
   const { flights, loading, error } = useFlightsData();
   const [allFlights, setAllFlights] = useState(flights);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FlightFilters>(DEFAULT_FLIGHT_FILTERS);
+  const [deleteDialog, setDeleteDialog] = useState<DeleteDialogState>(null);
 
   useEffect(() => {
     setAllFlights(flights);
@@ -153,24 +160,16 @@ export default function App() {
                   });
                 }}
                 onDeleteRow={(id) => {
-                  setAllFlights((previous) =>
-                    previous.filter((flight) => flight.id !== id),
-                  );
-                  setSelectedIds((previous) => {
-                    const next = new Set(previous);
-                    next.delete(id);
-                    return next;
-                  });
+                  setDeleteDialog({ mode: "single", flightId: id });
                 }}
                 onDeleteSelected={() => {
                   if (selectedIds.size === 0) {
                     return;
                   }
-
-                  setAllFlights((previous) =>
-                    previous.filter((flight) => !selectedIds.has(flight.id)),
-                  );
-                  setSelectedIds(new Set());
+                  setDeleteDialog({
+                    mode: "bulk",
+                    ids: Array.from(selectedIds),
+                  });
                 }}
                 onUpdateFlight={(id, updates) => {
                   setAllFlights((previous) =>
@@ -184,6 +183,45 @@ export default function App() {
           )}
         </Stack>
       </Paper>
+      <DeleteConfirmDialog
+        open={deleteDialog !== null}
+        title={
+          deleteDialog?.mode === "bulk"
+            ? "Delete selected flights?"
+            : "Delete this flight?"
+        }
+        description={
+          deleteDialog?.mode === "bulk"
+            ? `Are you sure you want to delete ${deleteDialog.ids.length} selected flights? This action cannot be undone.`
+            : "Are you sure you want to delete this flight? This action cannot be undone."
+        }
+        onCancel={() => setDeleteDialog(null)}
+        onConfirm={() => {
+          if (!deleteDialog) {
+            return;
+          }
+
+          if (deleteDialog.mode === "single") {
+            const id = deleteDialog.flightId;
+            setAllFlights((previous) =>
+              previous.filter((flight) => flight.id !== id),
+            );
+            setSelectedIds((previous) => {
+              const next = new Set(previous);
+              next.delete(id);
+              return next;
+            });
+          } else {
+            const idsToDelete = new Set(deleteDialog.ids);
+            setAllFlights((previous) =>
+              previous.filter((flight) => !idsToDelete.has(flight.id)),
+            );
+            setSelectedIds(new Set());
+          }
+
+          setDeleteDialog(null);
+        }}
+      />
     </Container>
   );
 }
