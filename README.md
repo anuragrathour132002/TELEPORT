@@ -1,4 +1,4 @@
-# Teleport — Flight Schedule Management (Take-Home)
+# Teleport Assessment — Flight Schedule Management
 
 Internal operations-style UI to view, search, filter, select, edit, and delete flight records. All data is loaded once from local JSON and managed in React state (no backend).
 
@@ -57,12 +57,9 @@ The app fetches this file on mount (`/data/flights.json`).
 
 - **Filters** combine with **AND** logic; **Clear All** resets filters (search is cleared with Clear All in the current implementation).
 - **Date range filter** uses **overlap** between the selected range and each flight’s `startDate`–`endDate`.
+- **Table virtualization**: the flight list body uses `react-window` (`FixedSizeList`) with a fixed row height and static header for efficient scrolling over the full dataset.
 - **Inline edit save** simulates an async request; saves can **randomly fail** to demonstrate loading, error state, and non-commit (rollback) behavior. Click **Save** again to retry.
 
-## What to submit
-
-- A **GitHub repository** (public or shared with the hiring team) containing this source code.
-- This **README** with the setup instructions above.
 
 ## Project scripts
 
